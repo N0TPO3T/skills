@@ -1,0 +1,3 @@
+interface:
+  display_name: "多会话持续执行"
+  short_description: "按既定计划协调独立执行会话，定时恢复工作并汇总可追溯的验收证据"
