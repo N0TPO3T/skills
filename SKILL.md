@@ -1,15 +1,15 @@
 ---
-name: research-orchestrator
+name: multiagent-work
 description: Coordinate research and engineering work from one Codex chat, choosing direct execution or bounded subagent delegation and verifying the combined result. Use when the user asks for a 研究中台, 中台执行, 中台状态, 中台继续, 中台暂停, 中台验收, 自动分发子代理, 并行审查, or a comparable orchestrated workflow across any project. Long-running or unattended work still requires an explicit request.
 ---
 
-# 研究与工程中台
+# Multiagent Work：研究与工程中台
 
 让用户只描述目标，由当前会话承担中台：判断工作模式、按需分发子代理、核验关键证据并交付结论。不要要求用户粘贴模式卡、补写完整工作包模板或重复长期规则。
 
 ## 调用与授权语义
 
-- `$research-orchestrator 中台执行：<目标>` 或 `中台执行：<目标>`：在当前任务范围内执行；若满足下文条件，可自动使用临时子代理。
+- `$multiagent-work 中台执行：<目标>` 或 `中台执行：<目标>`：在当前任务范围内执行；若满足下文条件，可自动使用临时子代理。
 - `并行审查：<对象>`：把相互独立的审查维度并行分发，主会话统一核验。
 - `只分析：<问题>`：只读审计或诊断，不实施修改、不训练、不创建外部任务。
 - `直接执行：<目标>`：主会话完成，不使用子代理，除非用户随后改变要求。

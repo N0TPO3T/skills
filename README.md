@@ -1,4 +1,4 @@
-# Research Orchestrator
+# Multiagent Work
 
 一个面向科研与工程任务的 Codex 中台 skill。用户只需描述目标；主会话会判断直接执行还是分发子代理，并负责检查证据、整合结果与停止工作。
 
@@ -24,14 +24,14 @@
 在 Codex 中直接要求安装：
 
 ```text
-请从 https://github.com/N0TPO3T/research-orchestrator 安装这个 skill。
+请从 https://github.com/N0TPO3T/multiagent-work 安装这个 skill。
 ```
 
 也可以手动安装：
 
 ```bash
-git clone https://github.com/N0TPO3T/research-orchestrator.git \
-  ~/.codex/skills/research-orchestrator
+git clone https://github.com/N0TPO3T/multiagent-work.git \
+  ~/.codex/skills/multiagent-work
 ```
 
 安装后新建一个 Codex 任务；如果 skill 列表没有刷新，重启 Codex。
@@ -41,7 +41,7 @@ git clone https://github.com/N0TPO3T/research-orchestrator.git \
 最可靠的首次调用方式：
 
 ```text
-$research-orchestrator 中台执行：审计当前项目，判断训练失败的根因；可以自动分发子代理，先不要修改代码。
+$multiagent-work 中台执行：审计当前项目，判断训练失败的根因；可以自动分发子代理，先不要修改代码。
 ```
 
 常用命令：
@@ -63,7 +63,7 @@ $research-orchestrator 中台执行：审计当前项目，判断训练失败的
 ## 结构
 
 ```text
-research-orchestrator/
+multiagent-work/
 ├── SKILL.md
 ├── agents/
 │   └── openai.yaml
@@ -81,12 +81,12 @@ skill 提供决策和编排规则，不会为宿主增加原本不存在的子�
 
 ## English
 
-Research Orchestrator is a Codex skill for coordinating research and engineering work from one main chat. It chooses between direct execution and bounded subagent delegation, verifies critical evidence, and loads additional rules only for research, production, or long-running workflows.
+Multiagent Work is a Codex skill for coordinating research and engineering work from one main chat. It chooses between direct execution and bounded subagent delegation, verifies critical evidence, and loads additional rules only for research, production, or long-running workflows.
 
 Invoke it with:
 
 ```text
-$research-orchestrator Coordinate this task, delegate independent work when useful, and verify the result.
+$multiagent-work Coordinate this task, delegate independent work when useful, and verify the result.
 ```
 
 ## License
