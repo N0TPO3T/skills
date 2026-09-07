@@ -1,0 +1,4 @@
+interface:
+  display_name: "研究与工程中台"
+  short_description: "在任意项目中自动分解、分发并核验研究与工程任务结果"
+  default_prompt: "Use $research-orchestrator to coordinate this research or engineering task, delegate independent work when useful, and verify the result."
