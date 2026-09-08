@@ -157,6 +157,49 @@ class ReportTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             report.publish(self.cfg, packet, draft)
 
+    def test_codex_token_usage_metadata_does_not_hide_later_work(self):
+        self.cfg["sources"][0]["kind"] = "codex"
+        stamp = "2026-09-08T01:00:00Z"
+        self.log("usage.jsonl", [codex_header(), codex(stamp, "开始排查"),
+            {"type": "token_usage_record", "timestamp": stamp,
+             "payload": {"usage": {"input_tokens": 123, "output_tokens": 45}}},
+            {"type": "inter_agent_communication_metadata", "payload": {"trigger_turn": "turn-1"}},
+            codex(stamp, "排查后的工作记录"),
+            {"type": "response_item", "timestamp": stamp,
+             "payload": {"type": "function_call_output", "call_id": "check-1",
+                         "output": "regression check passed"}}])
+        packet = self.packet()
+        self.assertEqual(packet["status"], "ready")
+        self.assertFalse(packet["partial"])
+        self.assertEqual([m["text"] for m in packet["sessions"][0]["messages"]],
+                         ["开始排查", "排查后的工作记录", "regression check passed"])
+
+    def test_codex_named_standalone_outputs_preserve_evidence(self):
+        self.cfg["sources"][0]["kind"] = "codex"
+        stamp = "2026-09-08T01:00:00Z"
+        self.log("standalone.jsonl", [codex_header(), codex(stamp, "开始验证"),
+            {"type": "response_item", "timestamp": stamp,
+             "payload": {"type": "function_call_output", "id": "output-1",
+                         "name": "exec", "namespace": "functions",
+                         "output": "check failed", "is_error": True}},
+            codex(stamp, "继续排查")])
+        packet = self.packet()
+        self.assertFalse(packet["partial"])
+        messages = packet["sessions"][0]["messages"]
+        self.assertEqual(messages[1]["text"], "check failed")
+        self.assertEqual(messages[1]["tool_name"], "exec")
+        self.assertTrue(messages[1]["is_error"])
+        self.assertEqual(messages[-1]["text"], "继续排查")
+
+    def test_codex_unknown_record_still_reports_partial(self):
+        self.cfg["sources"][0]["kind"] = "codex"
+        stamp = "2026-09-08T01:00:00Z"
+        self.log("unknown.jsonl", [codex_header(), codex(stamp, "开始排查"),
+            {"type": "unknown_record", "payload": {}}, codex(stamp, "不得静默越过")])
+        packet = self.packet()
+        self.assertTrue(packet["partial"])
+        self.assertEqual([m["text"] for m in packet["sessions"][0]["messages"]], ["开始排查"])
+
     def test_codex_mirrors_metadata_and_tool_failure(self):
         self.cfg["sources"][0]["kind"] = "codex"
         stamp = "2026-09-08T01:00:00Z"
