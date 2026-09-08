@@ -121,4 +121,4 @@ python "<script>" save --packet "<临时目录>/packet.json" --draft "<临时目
 
 ## 支持边界
 
-OMP：`session` header + `message` 记录；Codex：`session_meta` + `response_item`，去掉 `event_msg` 消息镜像；保留工具完成证据。纯 event-only Codex 日志不支持并报读取失败。压缩摘要和 replacement_history 不重新记入当天。图片不做 OCR。未知消息格式、损坏 JSON、无时区消息时间明确作为读取失败，而不是没有工作。模型语义判断仍需按上述规则审核，脚本不声称能自动证明工作已完成。
+OMP：`session` header + `message` 记录；Codex：`session_meta` + `response_item`，去掉 `event_msg` 消息镜像；保留工具完成证据。纯 event-only Codex 日志不支持并报读取失败。压缩摘要、`compaction` / `compaction_summary` / `context_compaction` 控制项及 replacement_history 不重新记入当天，也不阻断之后的正常消息。图片不做 OCR，但保留仅图片用户消息的回合边界，避免误过滤后续工作。未知消息格式、损坏 JSON/UTF-8、无时区消息时间明确作为读取失败，而不是没有工作；损坏行之前已完整读取的记录仍可使用。单个目录条目不可读不会丢弃其他可读会话。模型语义判断仍需按上述规则审核，脚本不声称能自动证明工作已完成。

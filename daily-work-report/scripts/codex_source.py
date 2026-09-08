@@ -54,11 +54,11 @@ def iter_messages(path: Path) -> Iterator[dict]:
     calls: dict[str, str] = {}
     completed_calls: set[str] = set()
     line_number = 0
-    with path.open("r", encoding="utf-8-sig") as stream:
+    with path.open("rb") as stream:
         while True:
             line_number += 1
             try:
-                raw = stream.readline()
+                raw = stream.readline().decode("utf-8-sig" if line_number == 1 else "utf-8")
             except UnicodeError:
                 raise _error(line_number, "invalid UTF-8 input") from None
             if not raw:
@@ -137,7 +137,7 @@ def iter_messages(path: Path) -> Iterator[dict]:
                     elif part_type not in {"input_image", "output_image", "image"}:
                         raise _error(line_number, "unsupported message content type")
                 timestamp = _timestamp(record, line_number)
-                if parts:
+                if parts or role == "user":
                     yield {"timestamp": timestamp, "role": role, "text": "\n".join(parts)}
                 continue
             if item in {"function_call", "custom_tool_call"}:
@@ -173,7 +173,7 @@ def iter_messages(path: Path) -> Iterator[dict]:
                 completed_calls.add(call_id)
                 yield message
                 continue
-            if item != "reasoning":
+            if item not in {"reasoning", "compaction", "compaction_summary", "context_compaction"}:
                 raise _error(line_number, "unsupported response item type")
     if not header_seen:
         raise _error(max(1, line_number - 1), "session_meta header is missing")

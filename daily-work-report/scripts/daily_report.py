@@ -25,7 +25,8 @@ SECRET = re.compile(
     r"|\b(?:sk-|ghp_|github_pat_)[A-Za-z0-9_-]{12,}"
     r"|\bBearer\s+[A-Za-z0-9._~+/=-]+"
     r"|(?:password|passwd|api[_-]?key|access[_-]?token|secret|密码|密钥)"
-    r"[\"']?\s*[:=：]\s*[\"']?[^\s,;\"'，；]+",
+    r"[\"']?\s*[:=：]\s*(?:\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'"
+    r"|[\"'][^\r\n]*|[^\s,;\"'，；]+)",
     re.IGNORECASE,
 )
 REPORT_REQUEST = re.compile(r"^(?:请)?(?:生成今天(?:的)?日报|重新生成\d{4}-\d{2}-\d{2}(?:的)?日报)[。！!\s]*$")
@@ -125,8 +126,12 @@ def session_files(root: Path, errors: list) -> list[Path]:
         errors.append({"path": str(error.filename), "reason": "会话目录读取失败"})
 
     def linked(path):
-        info = path.lstat()
-        return path.is_symlink() or bool(getattr(info, "st_file_attributes", 0) & 0x400)
+        try:
+            info = path.lstat()
+            return path.is_symlink() or bool(getattr(info, "st_file_attributes", 0) & 0x400)
+        except OSError:
+            errors.append({"path": str(path), "reason": "会话目录条目读取失败"})
+            return True
 
     # No creation-date / mtime prefilter: old sessions may continue today.
     for folder, dirs, names in os.walk(root, followlinks=False, onerror=onerror):
@@ -147,7 +152,11 @@ def collect(cfg: dict, report_date: str | None = None, scheduled: bool = False,
     for source in cfg["sources"]:
         root = Path(source["root"])
         for file in session_files(root, errors):
-            resolved = str(file.resolve())
+            try:
+                resolved = str(file.resolve())
+            except OSError:
+                errors.append({"path": str(file), "reason": "会话路径读取失败"})
+                continue
             if resolved in seen or file.stem in exclude or resolved in exclude:
                 continue
             seen.add(resolved)
@@ -165,7 +174,7 @@ def collect(cfg: dict, report_date: str | None = None, scheduled: bool = False,
                     if message["role"] in {"user", "assistant"} and (
                             text.strip() == MARKER or text.startswith((MARKER + " ", MARKER + "\n"))):
                         reporting = True
-                    if reporting:
+                    if reporting or not text.strip():
                         continue
                     stamp = message["timestamp"].astimezone(timezone.utc)
                     record = {**message, "timestamp": stamp.isoformat(), "text": clean(text),

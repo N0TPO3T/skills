@@ -69,8 +69,9 @@ def iter_messages(path: Path) -> Iterator[dict]:
     header_seen = False
     line_number = 0
     try:
-        with path.open("r", encoding="utf-8-sig") as stream:
+        with path.open("rb") as stream:
             for line_number, raw in enumerate(stream, 1):
+                raw = raw.decode("utf-8-sig" if line_number == 1 else "utf-8")
                 if not raw.strip():
                     continue
                 try:
@@ -121,9 +122,9 @@ def iter_messages(path: Path) -> Iterator[dict]:
                         raise _error(line_number, "invalid tool result metadata")
                     result["tool_name"] = name
                     result["is_error"] = is_error
-                if text or role == "toolResult":
+                if text or role in {"user", "toolResult"}:
                     yield result
     except UnicodeError:
-        raise _error(line_number + 1, "invalid UTF-8 input") from None
+        raise _error(line_number, "invalid UTF-8 input") from None
     if not header_seen:
         raise _error(max(line_number, 1), "missing session header")

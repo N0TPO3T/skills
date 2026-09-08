@@ -167,6 +167,80 @@ class ReportTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             report.publish(self.cfg, packet, self.draft(packet, "配置 api_key=never-publish-this"))
 
+    def test_quoted_secret_values_do_not_leak_suffixes_into_evidence(self):
+        self.log("quoted.jsonl", [omp_header(), omp("2026-09-08T01:00:00Z",
+            'password="prefix,private-suffix with spaces"；继续比较检索方案')])
+        packet = self.packet()
+        text = packet["sessions"][0]["messages"][0]["text"]
+        self.assertNotIn("private-suffix", text)
+        self.assertNotIn("with spaces", text)
+        self.assertIn("继续比较检索方案", text)
+        with self.assertRaises(ValueError):
+            report.publish(self.cfg, packet, self.draft(packet, '配置 password="prefix,private-suffix"'))
+
+    def test_unreadable_directory_entry_does_not_discard_readable_work(self):
+        self.log("good.jsonl", [omp_header(), omp("2026-09-08T01:00:00Z", "讨论方案")])
+        inaccessible = self.logs / "inaccessible.jsonl"
+        inaccessible.touch()
+        original = Path.lstat
+
+        def restricted(path, *args, **kwargs):
+            if path == inaccessible:
+                raise PermissionError("denied")
+            return original(path, *args, **kwargs)
+
+        with patch.object(Path, "lstat", restricted):
+            packet = self.packet()
+        self.assertEqual(packet["status"], "ready")
+        self.assertTrue(packet["partial"])
+        self.assertEqual(packet["sessions"][0]["messages"][0]["text"], "讨论方案")
+
+    def test_image_only_user_ends_report_exclusion_for_both_sources(self):
+        for kind in ("omp", "codex"):
+            with self.subTest(source=kind):
+                self.cfg["sources"][0]["kind"] = kind
+                if kind == "omp":
+                    rows = [omp_header(), omp("2026-09-08T01:00:00Z", "生成今天的日报"),
+                            omp("2026-09-08T01:01:00Z", "", "user"),
+                            omp("2026-09-08T01:02:00Z", "分析截图中的接口问题", "assistant")]
+                    rows[2]["message"]["content"] = [{"type": "image", "data": "synthetic"}]
+                else:
+                    rows = [codex_header(), codex("2026-09-08T01:00:00Z", "生成今天的日报"),
+                            codex("2026-09-08T01:01:00Z", ""),
+                            codex("2026-09-08T01:02:00Z", "分析截图中的接口问题")]
+                    rows[2]["payload"]["content"] = [{"type": "input_image", "image_url": "synthetic"}]
+                    rows[3]["payload"]["role"] = "assistant"
+                self.log("session.jsonl", rows)
+                packet = self.packet()
+                self.assertEqual(packet["status"], "ready")
+                self.assertEqual([m["text"] for m in packet["sessions"][0]["messages"]],
+                                 ["分析截图中的接口问题"])
+
+    def test_invalid_utf8_tail_preserves_complete_prefix_for_both_sources(self):
+        for kind, header, message in (("omp", omp_header, omp), ("codex", codex_header, codex)):
+            with self.subTest(source=kind):
+                self.cfg["sources"][0]["kind"] = kind
+                path = self.log("session.jsonl", [header(), message("2026-09-08T01:00:00Z", "讨论方案")])
+                with path.open("ab") as stream:
+                    stream.write(b"\xff\n")
+                packet = self.packet()
+                self.assertEqual(packet["status"], "ready")
+                self.assertTrue(packet["partial"])
+                self.assertEqual(packet["sessions"][0]["messages"][0]["text"], "讨论方案")
+
+    def test_codex_compaction_control_items_do_not_hide_later_work(self):
+        self.cfg["sources"][0]["kind"] = "codex"
+        rows = [codex_header()]
+        rows.extend({"type": "response_item", "timestamp": "2026-09-07T00:00:00Z",
+                     "payload": {"type": kind, "encrypted_content": "opaque"}}
+                    for kind in ("compaction", "compaction_summary", "context_compaction"))
+        rows.append(codex("2026-09-08T01:00:00Z", "继续讨论方案"))
+        self.log("session.jsonl", rows)
+        packet = self.packet()
+        self.assertEqual(packet["status"], "ready")
+        self.assertFalse(packet["partial"])
+        self.assertEqual(packet["sessions"][0]["messages"][0]["text"], "继续讨论方案")
+
 
 if __name__ == "__main__":
     unittest.main()
