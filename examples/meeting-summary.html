@@ -111,7 +111,7 @@
 </head>
 <body>
   <nav class="toolbar" aria-label="海报显示与打印">
-    <button id="fit" type="button" aria-pressed="true">原尺寸</button>
+    <button id="fit" type="button">原尺寸</button>
     <button id="print" type="button">打印 / 保存 PDF</button>
   </nav>
   <div class="frame">
@@ -208,15 +208,14 @@
     const fitButton = document.getElementById('fit');
     let fitted = true;
     function updateView() {
+      fitButton.textContent = fitted ? '原尺寸' : '适应窗口';
+      fitButton.setAttribute('aria-label', fitted ? '切换到原尺寸' : '切换到适应窗口');
       const availableWidth = Math.max(1, window.innerWidth - 40);
       const availableHeight = Math.max(1, window.innerHeight - toolbar.getBoundingClientRect().height - 24);
       const scale = fitted ? Math.min(1, availableWidth / 1920, availableHeight / 1200) : 1;
       poster.style.transform = `scale(${scale})`;
       frame.style.width = `${1920 * scale}px`;
       frame.style.height = `${1200 * scale}px`;
-      fitButton.textContent = fitted ? '原尺寸' : '适应窗口';
-      fitButton.setAttribute('aria-pressed', String(fitted));
-      fitButton.setAttribute('aria-label', fitted ? '切换到原尺寸' : '切换到适应窗口');
     }
     fitButton.addEventListener('click', () => { fitted = !fitted; updateView(); });
     document.getElementById('print').addEventListener('click', () => window.print());
