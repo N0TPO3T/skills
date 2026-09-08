@@ -1,7 +1,9 @@
 """Behavioral regressions using synthetic logs, never the user's sessions."""
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -42,6 +44,15 @@ class ReportTests(unittest.TestCase):
         self.logs.mkdir()
         self.cfg = {"output_dir": str(self.root / "output"), "timezone": "Asia/Shanghai",
                     "sources": [{"kind": "omp", "root": str(self.logs)}]}
+
+    def test_cli_returns_utf8_json_when_redirected_from_a_legacy_codepage(self):
+        script = Path(__file__).resolve().parents[1] / "scripts" / "daily_report.py"
+        result = subprocess.run(
+            [sys.executable, "-B", str(script), "--config", str(self.root / "config.json"),
+             "init", "--output-dir", str(self.root / "output"), "--timezone", "Invalid/Zone"],
+            capture_output=True, env={**os.environ, "PYTHONIOENCODING": "ascii"})
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(json.loads(result.stdout.decode("utf-8"))["status"], "failed")
 
     def log(self, name, rows):
         path = self.logs / name
