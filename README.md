@@ -2,9 +2,22 @@
 
 把“读完一份文档”变成“看懂一件事”。
 
-一个只有 [SKILL.md](SKILL.md) 的轻量 skill：让 coding agent 先提炼信息，再把论文、会议纪要、调研综述、方案、复盘或长文档做成便于扫读的**单页 HTML 信息海报**。不是 Markdown 分卡器，也不限于学术会议海报。
+核心只有一份 [SKILL.md](SKILL.md)：它是一份给 AI coding agent 阅读的工作指南，约束信息提炼、图文组织、配色和成品检查，让 agent 把长文档做成便于扫读的**单页 HTML 信息海报**。不是 Markdown 分卡器，也不限于学术会议海报。
 
 **English:** A lightweight, single-file skill for turning papers, meeting notes, research reviews, and other documents into readable, self-contained HTML posters. It guides a coding agent's information design; it is not a rendering framework or service.
+
+**它不是一个独立运行的软件。** 不需要为本项目安装 npm / Python 依赖，也没有要启动的服务；你需要一个能读取材料、编写 HTML 文件的 AI agent。浏览器检查与 PDF 解析等能力由所用 agent 和工具提供。
+
+## 适合什么材料
+
+| 输入 | 海报优先传达什么 |
+| --- | --- |
+| 论文、技术报告 | 核心问题、方法、关键证据和适用边界 |
+| 会议纪要、讨论记录 | 已定事项、尚存分歧、负责人及后续行动 |
+| 调研总结、综述、选型材料 | 方向分类、方案差异、选择依据和证据缺口 |
+| 思路总结、方案、复盘 | 问题结构、方案关系、经验和待验证假设 |
+
+材料可以是 Markdown、文本、PDF，或直接粘贴的内容。文件格式是否能被读取取决于 agent；无法解析的扫描 PDF 需要先提供可读文本或清晰图片。没有数据的材料也能使用，不会要求你凑数字或实验结果。
 
 ## 看一个例子
 
@@ -25,23 +38,24 @@
 - **配色有理由**：根据内容或品牌选择冷静技术、温暖编辑、清晰决策等气质；保持语义同色，不给每张卡片随机上色。
 - **交付轻量**：核心只是一份指令文件，无框架、包依赖、CI 或专用渲染服务。
 
-## 获取与使用
+## 快速上手
 
-从 [GitHub 仓库](https://github.com/N0TPO3T/insight-poster) 下载 ZIP，或克隆：
+### 1. 获取 skill
+
+从 [GitHub 仓库](https://github.com/N0TPO3T/insight-poster) 下载 ZIP 并解压，或克隆：
 
 ```sh
 git clone https://github.com/N0TPO3T/insight-poster.git
+cd insight-poster
 ```
 
-也可以只下载 [SKILL.md](https://raw.githubusercontent.com/N0TPO3T/insight-poster/main/SKILL.md)。
+在这个目录中启动你的 coding agent，或让已有会话读取这个目录中的文件。
 
-1. 在能读取文件、编写 HTML 的 coding agent 中打开项目，或把 `SKILL.md` 提供给它。
-2. 明确让 agent 先阅读并遵循这份 skill，再提供材料与用途。
-3. 下载或打开生成的 HTML；有浏览器工具时，让 agent 检查实际显示与打印效果。
+如果只想使用核心规则，也可以只下载 [SKILL.md](https://raw.githubusercontent.com/N0TPO3T/insight-poster/main/SKILL.md)，无需复制示例。支持本地 skill 的 agent 可按其官方文档安装；不同工具的目录和启用方式不同，本项目不提供安装器，也不承诺自动注册。
 
-如果你的 agent 支持本地 skill，可按**该 agent 的文档**把 `SKILL.md` 放入其支持的 skill 目录。目录布局、发现方式与启用步骤由 agent 决定；本项目不提供安装器，也不承诺复制后自动注册。
+### 2. 先用仓库示例跑一遍
 
-克隆或下载完整仓库后，可直接试用以下提示词；若只下载了 `SKILL.md`，请将示例输入路径换成自己的材料路径：
+克隆或下载完整仓库后，将下面这段提示词发给 agent：
 
 ```text
 请先阅读并遵循 SKILL.md，再读取 examples/meeting-notes.txt。
@@ -53,7 +67,58 @@ git clone https://github.com/N0TPO3T/insight-poster.git
 没有实际检查的部分，请明确说明。
 ```
 
-用于自己的材料时，替换输入文件、读者与用途即可；有品牌色、纸张或语言要求时一并说明。
+若只下载了 `SKILL.md`，请跳过仓库示例，直接提供自己的材料。agent 不在仓库目录中时，提示词里的相对路径需要换成它实际能访问的路径。
+
+### 3. 打开和调整成品
+
+在浏览器中打开生成的 `meeting-poster.html`，无需启动本地服务器：
+
+- **适应窗口**：查看整体信息结构。
+- **原尺寸**：阅读细节；小窗口下可以滚动。
+- **打印 / 保存 PDF**：打开浏览器打印对话框，选择保存为 PDF。检查预览是否为单页，是否保留背景色，以及自定义纸张是否被浏览器采用。
+
+不满意时，直接要求 agent 修改同一个 HTML，例如：
+
+```text
+保留顶部主张与核心关系图。
+下半部分合并为“已定事项、待决问题、后续行动”三个对齐的区域，
+删除与顶部重复的句子，改用暖白与赭红配色。
+不要添加原文没有的内容，修改后重新检查显示。
+```
+
+## 用自己的材料
+
+把下面的输入文件名换成实际材料路径。一般只需要说明**材料、读者、用途**，其余交给 skill；有语言、品牌色或纸张要求时再补充。
+
+### 论文解读
+
+```text
+先阅读并遵循 SKILL.md，再阅读 paper.pdf。
+面向有相关背景的研究者，制作中文单页 HTML 海报。
+上方突出核心方法和关键结果，下方解释证据与局限。
+只依据这篇论文，保留指标单位、基线和实验条件。
+输出 paper-poster.html。
+```
+
+### 调研与方案比较
+
+```text
+先阅读并遵循 SKILL.md，再阅读 research.md。
+面向正在选型的团队，把主要方案、差异和选择依据做成单页 HTML。
+用有依据的比较结构表达，不补造评分；信息不足的地方明确标注。
+输出 research-poster.html。
+```
+
+### 思路总结与复盘
+
+```text
+先阅读并遵循 SKILL.md，再整理下面粘贴的内容。
+面向参与讨论的同事，做一张帮助理解问题和方案关系的信息海报。
+区分已经确认的事实与尚待验证的想法，不把建议写成决定。
+输出 ideas-poster.html。
+材料：
+（在这里粘贴你的内容）
+```
 
 ## 输出与运行边界
 
