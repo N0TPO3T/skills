@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Agent"
+  short_description: "Evidence-gated machine-learning research workflow"
+  default_prompt: "Use $research-agent to conduct an end-to-end machine-learning research project from my research direction."

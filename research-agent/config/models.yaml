@@ -1,0 +1,7 @@
+models:
+  orchestrator: reasoning-model
+  research: search-capable-model
+  reviewer: reasoning-model
+  experiment: reasoning-model
+  paper: writing-model
+

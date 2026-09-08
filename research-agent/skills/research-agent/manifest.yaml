@@ -1,0 +1,105 @@
+schema_version: "1.0"
+
+always:
+  - references/scientific_rules.md
+
+aliases:
+  literature: horizon_scan
+  gap: gap_mining
+  resource_aware_design: resource_design
+  core_experiment_loop: core_experiment
+  paper_writing: paper_assembly
+  final_report: complete
+
+phases:
+  bootstrap:
+    - references/research_loop.md
+    - references/state_contract.md
+    - prompts/bootstrap.md
+  horizon_scan:
+    - references/research_loop.md
+    - prompts/horizon_scan.md
+  gap_mining:
+    - references/research_loop.md
+    - prompts/gap_mining.md
+  gap_synthesis:
+    - references/research_loop.md
+    - prompts/gap_synthesis.md
+  topic_selection:
+    - references/research_loop.md
+  idea_formation:
+    - references/idea_loop.md
+    - prompts/idea_formation.md
+  idea_review:
+    - references/idea_loop.md
+    - prompts/idea_attack.md
+    - prompts/idea_defense.md
+    - prompts/meta_review.md
+  resource_design:
+    - references/experiment_loop.md
+    - prompts/experiment_design.md
+  baseline_reproduction:
+    - references/experiment_loop.md
+    - prompts/baseline_reproduction.md
+  core_experiment:
+    - references/experiment_loop.md
+    - prompts/core_experiment.md
+  diagnosis:
+    - references/experiment_loop.md
+    - prompts/diagnosis.md
+  pivot:
+    - references/experiment_loop.md
+    - prompts/pivot.md
+  evidence_expansion:
+    - references/experiment_loop.md
+    - prompts/evidence_expansion.md
+  paper_audit:
+    - references/paper_loop.md
+    - prompts/paper_readiness.md
+  paper_assembly:
+    - references/paper_loop.md
+    - prompts/paper_package.md
+    - prompts/paper_writer.md
+  paper_review:
+    - references/paper_loop.md
+    - prompts/paper_review.md
+  complete:
+    - references/paper_loop.md
+    - prompts/research_report.md
+
+checkpoint_reference: references/checkpoints.md
+checkpoints:
+  topic_selection: prompts/checkpoint_topic.md
+  resource_input: prompts/checkpoint_resources.md
+  major_pivot: prompts/checkpoint_pivot.md
+
+focused_verification:
+  - references/research_loop.md
+  - prompts/evidence_verify.md
+
+sop_coverage:
+  global_system: references/scientific_rules.md
+  bootstrap: prompts/bootstrap.md
+  horizon_scan: prompts/horizon_scan.md
+  gap_mining: prompts/gap_mining.md
+  gap_synthesis: prompts/gap_synthesis.md
+  evidence_verify: prompts/evidence_verify.md
+  idea_formation: prompts/idea_formation.md
+  idea_attack: prompts/idea_attack.md
+  idea_defense: prompts/idea_defense.md
+  meta_review: prompts/meta_review.md
+  resource_design: prompts/experiment_design.md
+  baseline_reproduction: prompts/baseline_reproduction.md
+  experiment_loop: prompts/core_experiment.md
+  diagnosis: prompts/diagnosis.md
+  pivot: prompts/pivot.md
+  evidence_expansion: prompts/evidence_expansion.md
+  paper_readiness: prompts/paper_readiness.md
+  paper_package: prompts/paper_package.md
+  paper_writer: prompts/paper_writer.md
+  paper_review: prompts/paper_review.md
+  research_report: prompts/research_report.md
+  checkpoints:
+    topic: prompts/checkpoint_topic.md
+    resources: prompts/checkpoint_resources.md
+    pivot: prompts/checkpoint_pivot.md

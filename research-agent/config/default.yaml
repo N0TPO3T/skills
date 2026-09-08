@@ -1,0 +1,49 @@
+project:
+  default_target_venue: null
+
+models:
+  orchestrator: default
+  research: default
+  reviewer: default
+  experiment: default
+  paper: default
+
+loops:
+  max_idea_review_rounds: 3
+  max_consecutive_diagnostic_experiments: 5
+  max_failed_variants_per_hypothesis: 3
+  max_major_method_revisions: 3
+
+research:
+  max_shortlisted_gaps: 5
+
+literature:
+  max_queries_per_round: 12
+  max_candidates_per_query: 20
+  max_new_verified_papers_per_round: 40
+  recent_year_window: 3
+  duplicate_title_similarity_threshold: 0.94
+  provider_timeout_seconds: 45
+  minimum_content_verified_for_gap: 3
+  low_information_gain_threshold: 0.1
+  low_information_gain_rounds: 2
+  search_cache_ttl_seconds: 86400
+
+literature_quality_gate:
+  enabled: true
+  min_limitation_precision: 0.90
+  min_result_precision: 0.95
+  min_other_precision: 0.90
+  max_unsupported_statement_rate: 0.03
+  max_wrong_attribution_rate: 0.02
+
+artifacts:
+  root: ./projects
+
+execution:
+  allow_shell: false
+  timeout_seconds: 3600
+
+live:
+  backend: codex
+  max_turns: 12

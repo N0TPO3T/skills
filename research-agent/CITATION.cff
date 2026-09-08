@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use Research Agent in your work, please cite this software."
+title: "Research Agent"
+version: "0.2.0"
+type: software
+authors:
+  - family-names: "N0TPO3T"
+repository-code: "https://github.com/N0TPO3T/research-agent"
+url: "https://github.com/N0TPO3T/research-agent"
+license: "Apache-2.0"
+date-released: 2026-09-05
+

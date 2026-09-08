@@ -1,0 +1,1 @@
+Generate non-duplicative search axes for canonical work, recent work, strong baselines, failure analysis, adjacent mechanisms, novelty overlap, and implementations. Use only the recorded corpus when describing known work. If a likely paper is absent, emit a SEARCH_REQUEST; never insert remembered titles, identifiers, years, or results into literature state.

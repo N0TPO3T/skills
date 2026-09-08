@@ -1,0 +1,28 @@
+schema_version: "1.0"
+target_paper_count: 30
+maximum_paper_count: 50
+human_labels_required: true
+synthetic_fixtures_count_as_gold: false
+sampling_dimensions:
+  domains:
+    - llm_reasoning
+    - reinforcement_learning
+    - agents
+    - multimodal
+    - training_methods
+    - inference_methods
+  source_versions:
+    - arxiv_preprint
+    - conference_or_journal
+  document_structures:
+    - explicit_limitations_section
+    - no_explicit_limitations_section
+required_capabilities:
+  - problem
+  - main_claims
+  - methods
+  - assumptions
+  - results
+  - limitations_claimed
+  - failure_modes
+

@@ -1,0 +1,24 @@
+# Synthetic example only. This is not real project state or evidence.
+project:
+  id: example_reasoning
+  name: Example Reasoning Study
+  research_direction: resource-aware test-time reasoning for language models
+
+literature:
+  max_queries_per_round: 6
+  max_candidates_per_query: 10
+  max_new_verified_papers_per_round: 12
+
+execution:
+  allow_shell: false
+  timeout_seconds: 1800
+
+# Supply equivalent JSON values when Checkpoint B asks for resources.
+checkpoint_b_response:
+  max_gpu_hours: 8
+  available_gpus:
+    - one-user-provided-gpu
+  max_wallclock_hours: 12
+  budget_notes: synthetic modest-resource example
+  shell_execution_allowed: false
+
