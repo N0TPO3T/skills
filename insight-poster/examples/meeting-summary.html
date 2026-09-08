@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>从长周报到一页更新 · 虚构会议示例</title>
+  <style>
+    :root {
+      --paper: #f5f7fc;
+      --ink: #243047;
+      --muted: #596780;
+      --blue: #3e5fad;
+      --blue-soft: #e8eefb;
+      --line: #d4ddec;
+      --amber: #85521e;
+      --amber-soft: #fbf3e5;
+      --white: #fff;
+      --gap: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: #e1e6ef;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+      gap: 12px; padding: 16px 20px; min-height: 72px;
+    }
+    button {
+      padding: 10px 18px; border: 1px solid #b5c2d8; border-radius: 8px;
+      background: var(--white); color: var(--ink); font: inherit; font-size: 15px;
+      cursor: pointer;
+    }
+    button:hover { background: var(--blue-soft); }
+    button:focus-visible, a:focus-visible { outline: 3px solid var(--blue); outline-offset: 5px; }
+    .frame { position: relative; margin: 0 auto 24px; width: 1920px; height: 1200px; }
+    .poster {
+      position: absolute; inset: 0 auto auto 0; transform-origin: top left;
+      width: 1920px; height: 1200px; padding: 56px 64px;
+      display: grid; grid-template-rows: 142px 96px 404px 310px 40px;
+      gap: var(--gap); background: var(--paper);
+      box-shadow: 0 16px 60px #2430471a;
+    }
+    h1, h2, h3, p, figure { margin: 0; }
+    .masthead { position: relative; }
+    .eyebrow { display: flex; align-items: center; gap: 14px; color: var(--blue); font-size: 21px; font-weight: 650; letter-spacing: 2px; }
+    .eyebrow::before { content: ""; width: 32px; height: 4px; background: var(--blue); }
+    h1 { margin-top: 12px; font-size: 60px; line-height: 1.18; letter-spacing: -2px; font-weight: 750; }
+    .subtitle { margin-top: 12px; font-size: 25px; color: var(--muted); }
+    .meeting-date { position: absolute; top: 2px; right: 0; color: var(--muted); font-size: 20px; }
+    .key-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; background: var(--blue); color: var(--white); border-radius: 14px; padding: 20px 12px; }
+    .key { padding: 0 28px; display: flex; align-items: center; gap: 22px; min-width: 0; }
+    .key + .key { border-left: 1px solid #ffffff50; }
+    .key span { font-size: 21px; color: #e0e7fa; }
+    .key strong { font-size: 30px; font-weight: 650; }
+    .panel { border: 1px solid var(--line); background: var(--white); border-radius: 16px; min-width: 0; }
+    .visual { padding: 28px 32px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+    h2 { font-size: 30px; font-weight: 700; line-height: 1.3; }
+    .legend { font-size: 20px; color: var(--muted); white-space: nowrap; }
+    .legend::before { content: ""; display: inline-block; width: 24px; border-top: 2px dashed var(--muted); margin: 0 10px 5px 0; }
+    .decision-map { display: grid; grid-template-columns: 306px 80px 766px 80px 494px; align-items: center; margin-top: 24px; height: 278px; }
+    .old-report { padding: 22px 24px; border-left: 4px solid #aebacf; }
+    .small-label { font-size: 20px; color: var(--muted); margin-bottom: 13px; }
+    .old-report h3 { font-size: 33px; line-height: 1.3; }
+    .old-report p:last-child { margin-top: 15px; font-size: 23px; line-height: 1.55; color: var(--muted); }
+    .connector { width: 80px; height: 102px; }
+    .one-page { align-self: stretch; padding: 24px 28px; border: 2px solid var(--blue); border-radius: 12px; background: #f9fbff; }
+    .page-heading { display: flex; align-items: baseline; gap: 20px; }
+    .decision-label { font-size: 19px; color: var(--blue); font-weight: 700; white-space: nowrap; }
+    .page-heading h3 { font-size: 37px; font-weight: 750; }
+    .page-note { font-size: 22px; margin-top: 12px; color: var(--muted); }
+    .contents { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 29px; }
+    .content-column { min-width: 0; border-top: 3px solid var(--blue); padding-top: 17px; }
+    .content-column span { font-size: 19px; color: var(--muted); }
+    .content-column strong { display: block; margin-top: 8px; font-size: 27px; font-weight: 650; }
+    .attachments { margin-left: 20px; padding: 24px 26px; border: 2px dashed #9caecf; border-radius: 12px; }
+    .attachments h3 { font-size: 32px; }
+    .attachments p { margin-top: 15px; font-size: 24px; line-height: 1.6; color: var(--muted); }
+    .support { display: grid; grid-template-columns: 0.94fr 1.08fr 1.2fr; gap: var(--gap); }
+    .support .panel { padding: 26px 28px; }
+    .status { display: inline-block; font-size: 18px; font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; color: var(--blue); }
+    .support h2 { font-size: 29px; margin-bottom: 17px; }
+    .boundary-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; font-size: 24px; line-height: 1.45; }
+    .boundary-list li { padding-left: 20px; position: relative; }
+    .boundary-list li::before { content: ""; width: 6px; height: 6px; position: absolute; left: 0; top: 14px; border-radius: 50%; background: var(--blue); }
+    .open { background: var(--amber-soft); border-color: #e5d5bb; }
+    .open .status { color: var(--amber); }
+    .positions { display: grid; gap: 14px; font-size: 23px; line-height: 1.4; }
+    .positions p { display: grid; grid-template-columns: 124px 1fr; gap: 12px; }
+    .positions strong { font-weight: 600; color: var(--amber); }
+    .open-note { margin-top: 16px; font-size: 21px; color: var(--amber); }
+    .action-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 17px; }
+    .action-list li + li { border-top: 1px solid var(--line); padding-top: 16px; }
+    .action-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 22px; }
+    .action-meta strong { font-weight: 650; }
+    time { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .action-list p { margin-top: 7px; font-size: 23px; line-height: 1.45; }
+    .footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); font-size: 18px; color: var(--muted); }
+    .footer a { color: var(--blue); text-underline-offset: 4px; }
+    @page { size: 508mm 317.5mm; margin: 0; }
+    @media print {
+      html, body { width: 508mm; height: 317.5mm; margin: 0; background: var(--paper); }
+      body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .toolbar { display: none; }
+      .frame { width: 1920px !important; height: 1200px !important; margin: 0; }
+      .poster { position: relative; transform: none !important; box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="toolbar" aria-label="海报显示与打印">
+    <button id="fit" type="button">原尺寸</button>
+    <button id="print" type="button">打印 / 保存 PDF</button>
+  </nav>
+  <div class="frame">
+    <main class="poster" aria-labelledby="poster-title">
+      <header class="masthead">
+        <p class="eyebrow">虚构会议示例 · 小团队材料评审</p>
+        <p class="meeting-date">2026.06.03 · 虚构日期</p>
+        <h1 id="poster-title">把例会讨论，从长周报移到一页</h1>
+        <p class="subtitle">先看变化、阻塞与待决事项，再按需打开细节。</p>
+      </header>
+      <section class="key-strip" aria-label="关键理解">
+        <div class="key"><span>阅读入口</span><strong>一页更新</strong></div>
+        <div class="key"><span>保留依据</span><strong>详细记录作附件</strong></div>
+        <div class="key"><span>决定状态</span><strong>下次例会试行</strong></div>
+      </section>
+      <section class="panel visual" aria-labelledby="visual-title">
+        <div class="section-heading">
+          <h2 id="visual-title">正文负责聚焦，附件保留细节</h2>
+          <p class="legend">虚线为查阅关系，不表示先后步骤</p>
+        </div>
+        <figure class="decision-map" aria-label="决定一：下次例会用一页更新替代长篇周报。决定二：正文只保留进展变化、当前阻塞和待决事项；详细记录作为按需查阅的附件。">
+          <div class="old-report">
+            <p class="small-label">原有例会材料</p>
+            <h3>长篇文字周报</h3>
+            <p>关键事项<br>不易快速找到</p>
+          </div>
+          <svg class="connector" viewBox="0 0 80 102" aria-hidden="true">
+            <text x="40" y="28" text-anchor="middle" fill="#3e5fad" font-size="18">替代</text>
+            <path d="M8 56 H65 M55 47 L65 56 L55 65" fill="none" stroke="#3e5fad" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="one-page">
+            <div class="page-heading"><span class="decision-label">决定 01</span><h3>一页可视化更新</h3></div>
+            <p class="page-note"><span class="decision-label">决定 02</span>　正文仅保留以下栏目</p>
+            <div class="contents">
+              <div class="content-column"><span>变化</span><strong>进展变化</strong></div>
+              <div class="content-column"><span>障碍</span><strong>当前阻塞</strong></div>
+              <div class="content-column"><span>判断</span><strong>待决事项</strong></div>
+            </div>
+          </div>
+          <svg class="connector" viewBox="0 0 80 102" aria-hidden="true">
+            <text x="40" y="28" text-anchor="middle" fill="#596780" font-size="18">查证</text>
+            <path d="M0 56 H80" fill="none" stroke="#7d91b7" stroke-width="2" stroke-dasharray="6 5"/>
+          </svg>
+          <div class="attachments">
+            <h3>详细记录 / 附件</h3>
+            <p>按需查阅，不挤入正文。<br>归档位置仍待讨论。</p>
+          </div>
+        </figure>
+      </section>
+      <div class="support">
+        <section class="panel" aria-labelledby="boundary-title">
+          <span class="status">已确认 · 适用边界</span>
+          <h2 id="boundary-title">改呈现，不改项目记录</h2>
+          <ul class="boundary-list">
+            <li>仅用于例会，不扩展到对外汇报。</li>
+            <li>试用后再判断是否继续。</li>
+            <li>没有效率数据，不声称提效。</li>
+          </ul>
+        </section>
+        <section class="panel open" aria-labelledby="open-title">
+          <span class="status">待决 · 一个分歧</span>
+          <h2 id="open-title">附件放在哪里？</h2>
+          <div class="positions">
+            <p><strong>协调人</strong><span>团队共享目录，统一入口。</span></p>
+            <p><strong>项目记录员</strong><span>各项目目录，保留原位。</span></p>
+          </div>
+          <p class="open-note">尚未达成一致；收集意见不等于定案。</p>
+        </section>
+        <section class="panel" aria-labelledby="actions-title">
+          <span class="status">已确认 · 两项行动</span>
+          <h2 id="actions-title">谁来把试行准备好</h2>
+          <ol class="action-list">
+            <li>
+              <div class="action-meta"><strong>内容编辑</strong><time datetime="2026-06-05">截止 2026.06.05</time></div>
+              <p>制作含三个栏目的空白一页模板。</p>
+            </li>
+            <li>
+              <div class="action-meta"><strong>协调人</strong><time datetime="2026-06-08">截止 2026.06.08</time></div>
+              <p>收集两种归档方式的意见，带回例会。</p>
+            </li>
+          </ol>
+        </section>
+      </div>
+      <footer class="footer">
+        <p>来源：<a href="meeting-notes.txt">虚构会议记录</a> · 角色、日期与讨论均为演示设定</p>
+        <p>INSIGHT POSTER / 非真实会议记录</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const poster = document.querySelector('.poster');
+    const frame = document.querySelector('.frame');
+    const toolbar = document.querySelector('.toolbar');
+    const fitButton = document.getElementById('fit');
+    let fitted = true;
+    function updateView() {
+      fitButton.textContent = fitted ? '原尺寸' : '适应窗口';
+      fitButton.setAttribute('aria-label', fitted ? '切换到原尺寸' : '切换到适应窗口');
+      const availableWidth = Math.max(1, window.innerWidth - 40);
+      const availableHeight = Math.max(1, window.innerHeight - toolbar.getBoundingClientRect().height - 24);
+      const scale = fitted ? Math.min(1, availableWidth / 1920, availableHeight / 1200) : 1;
+      poster.style.transform = `scale(${scale})`;
+      frame.style.width = `${1920 * scale}px`;
+      frame.style.height = `${1200 * scale}px`;
+    }
+    fitButton.addEventListener('click', () => { fitted = !fitted; updateView(); });
+    document.getElementById('print').addEventListener('click', () => window.print());
+    window.addEventListener('resize', updateView);
+    updateView();
+  </script>
+</body>
+</html>
