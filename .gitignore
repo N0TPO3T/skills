@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+config.json
+packet.json
+draft.json
+*.jsonl
+.daily-report-*
