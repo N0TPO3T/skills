@@ -75,17 +75,18 @@ def iter_messages(path: Path) -> Iterator[dict]:
             payload = record.get("payload")
             if not isinstance(payload, dict):
                 raise _error(line_number, "payload must be an object")
-            if not header_seen:
+            if not header_seen or kind == "session_meta":
                 if kind != "session_meta":
                     raise _error(line_number, "expected session_meta header")
                 identifier = payload.get("id", payload.get("session_id"))
                 if not isinstance(identifier, str) or not identifier:
                     raise _error(line_number, "invalid session identifier")
                 _required_string(payload, "cwd", line_number)
+                # Resumed/forked logs may append a new, valid session header.
                 header_seen = True
+                calls.clear()
+                completed_calls.clear()
                 continue
-            if kind == "session_meta":
-                raise _error(line_number, "unexpected duplicate session_meta header")
             if kind in {"turn_context", "compacted", "world_state", "token_usage_record",
                         "inter_agent_communication_metadata"}:
                 continue
@@ -114,6 +115,31 @@ def iter_messages(path: Path) -> Iterator[dict]:
             if kind != "response_item":
                 raise _error(line_number, "unsupported record type")
             item = _required_string(payload, "type", line_number)
+            if item in {"web_search_call", "image_generation_call", "tool_search_call", "tool_search_output"}:
+                status = _required_string(payload, "status", line_number)
+                # Preserve native tool status, never binary images or discovered tool schemas.
+                detail = {"type": item, "status": status}
+                for key in ("action", "arguments", "revised_prompt"):
+                    if key in payload:
+                        detail[key] = payload[key]
+                yield {"timestamp": _timestamp(record, line_number), "role": "tool",
+                       "tool_name": item, "text": _text(detail),
+                       "is_error": status not in {"completed", "success"}}
+                continue
+            if item == "agent_message":
+                content = payload.get("content")
+                if not isinstance(content, list):
+                    raise _error(line_number, "agent message content must be a list")
+                parts = []
+                for part in content:
+                    if isinstance(part, dict) and part.get("type") == "encrypted_content":
+                        continue  # Opaque internal state is not diary evidence.
+                    if not isinstance(part, dict) or part.get("type") not in {"text", "input_text", "output_text"} or not isinstance(part.get("text"), str):
+                        raise _error(line_number, "unsupported agent message content")
+                    parts.append(part["text"])
+                yield {"timestamp": _timestamp(record, line_number), "role": "assistant",
+                       "text": "Agent communication (not completion evidence):\n" + "\n".join(parts)}
+                continue
             if item == "message":
                 role = _required_string(payload, "role", line_number)
                 if role in {"system", "developer"}:

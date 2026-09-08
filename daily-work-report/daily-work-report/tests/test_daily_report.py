@@ -45,6 +45,53 @@ class ReportTests(unittest.TestCase):
         self.cfg = {"output_dir": str(self.root / "output"), "timezone": "Asia/Shanghai",
                     "sources": [{"kind": "omp", "root": str(self.logs)}]}
 
+    def test_native_records_and_resumed_headers_do_not_drop_later_messages(self):
+        self.cfg['sources'][0]['kind'] = 'codex'
+        native = lambda payload: {'type': 'response_item', 'timestamp': '2026-09-08T01:00:00Z', 'payload': payload}
+        self.log('native.jsonl', [codex_header(),
+            native({'type': 'web_search_call', 'status': 'completed'}),
+            native({'type': 'image_generation_call', 'status': 'generating', 'result': 'opaque-image'}),
+            native({'type': 'tool_search_output', 'status': 'completed', 'tools': []}),
+            native({'type': 'agent_message', 'content': [{'type': 'input_text', 'text': 'review pending'},
+                {'type': 'encrypted_content', 'encrypted_content': 'opaque-state'}]}),
+            {'type': 'session_meta', 'payload': {'id': 'resumed-id', 'cwd': '/project'}},
+            codex('2026-09-08T02:00:00Z', 'later work')])
+        packet = self.packet()
+        self.assertFalse(packet['partial'])
+        messages = packet['sessions'][0]['messages']
+        self.assertEqual(messages[-1]['text'], 'later work')
+        self.assertEqual(messages[-2]['role'], 'assistant')
+        self.assertTrue(messages[1]['is_error'])
+        self.assertNotIn('opaque-', json.dumps(packet))
+
+    def test_unknown_record_still_reports_safe_line_reason(self):
+        self.cfg['sources'][0]['kind'] = 'codex'
+        self.log('bad.jsonl', [codex_header(), codex('2026-09-08T01:00:00Z', 'work'),
+            {'type': 'response_item', 'payload': {'type': 'private-unknown-value'}}])
+        packet = self.packet()
+        self.assertTrue(packet['partial'])
+        self.assertEqual(packet['errors'][0]['reason'], 'Codex JSONL line 3: unsupported response item type')
+        self.assertNotIn('private-unknown-value', json.dumps(packet))
+
+    def test_review_index_and_full_expansion_preserve_evidence(self):
+        from review_packet import view
+        self.log('long.jsonl', [omp_header(), omp('2026-09-08T01:00:00Z', 'a' * 2500 + 'late failure'),
+            omp('2026-09-08T02:00:00Z', 'a' * 2500 + 'late failure')])
+        packet = self.packet()
+        page = view(packet)
+        first, second = page['entries']
+        self.assertTrue(first['needs_expansion'])
+        self.assertEqual(second['duplicate_of'], first['id'])
+        text, offset = '', 0
+        while True:
+            part = view(packet, offset, 500, first['id'])
+            text += part['text']
+            offset = part['next_offset']
+            if offset is None:
+                break
+        self.assertEqual(text, packet['sessions'][0]['messages'][0]['text'])
+        self.assertEqual(view(packet, budget=100)['next_offset'], 1)
+
     def test_cli_returns_utf8_json_when_redirected_from_a_legacy_codepage(self):
         script = Path(__file__).resolve().parents[1] / "scripts" / "daily_report.py"
         result = subprocess.run(

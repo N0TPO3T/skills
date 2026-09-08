@@ -177,18 +177,23 @@ def collect(cfg: dict, report_date: str | None = None, scheduled: bool = False,
                     if reporting or not text.strip():
                         continue
                     stamp = message["timestamp"].astimezone(timezone.utc)
-                    record = {**message, "timestamp": stamp.isoformat(), "text": clean(text),
+                    record = {**message, "timestamp": stamp.isoformat(), "text": text,
                               "id": f"{prefix}:{index}"}
                     if stamp < start and message["role"] in {"user", "assistant"}:
                         history.append({**record, "context_only": True})
                     elif start <= stamp < end:
                         if not messages:
-                            context = list(history)
+                            context = [{**m, "text": clean(m["text"])} for m in history]
+                        record["text"] = clean(text)
                         messages.append(record)
                 readable += 1
             except (OSError, ValueError, TypeError, KeyError) as exc:
                 # Never echo raw exception messages: malformed JSON can contain secrets.
-                errors.append({"path": resolved, "reason": f"会话读取失败（{type(exc).__name__}）"})
+                reason = f"会话读取失败（{type(exc).__name__}）"
+                # Adapter errors contain fixed reason codes and line numbers, never input.
+                if type(exc) is ValueError and re.fullmatch(r"(?:Codex JSONL|OMP) line \d+: [a-zA-Z0-9_; ,/-]+", str(exc)):
+                    reason = str(exc)
+                errors.append({"path": resolved, "reason": reason})
             if messages:
                 sessions.append({"source": source["kind"], "session": file.stem,
                                  "context": context, "messages": messages})
