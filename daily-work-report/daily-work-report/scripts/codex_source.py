@@ -86,7 +86,8 @@ def iter_messages(path: Path) -> Iterator[dict]:
                 continue
             if kind == "session_meta":
                 raise _error(line_number, "unexpected duplicate session_meta header")
-            if kind in {"turn_context", "compacted", "world_state"}:
+            if kind in {"turn_context", "compacted", "world_state", "token_usage_record",
+                        "inter_agent_communication_metadata"}:
                 continue
             if kind == "event_msg":
                 event = _required_string(payload, "type", line_number)
@@ -156,7 +157,14 @@ def iter_messages(path: Path) -> Iterator[dict]:
                 }
                 continue
             if item in {"function_call_output", "custom_tool_call_output"}:
-                call_id = _required_string(payload, "call_id", line_number)
+                # Named standalone outputs have an item id, not a paired call_id.
+                call_id = None
+                standalone_name = None
+                if "call_id" in payload:
+                    call_id = _required_string(payload, "call_id", line_number)
+                else:
+                    _required_string(payload, "id", line_number)
+                    standalone_name = _required_string(payload, "name", line_number)
                 if "output" not in payload:
                     raise _error(line_number, "tool output is missing")
                 message = {
@@ -166,11 +174,14 @@ def iter_messages(path: Path) -> Iterator[dict]:
                 }
                 if call_id in calls:
                     message["tool_name"] = calls[call_id]
+                elif standalone_name is not None:
+                    message["tool_name"] = standalone_name
                 if "is_error" in payload:
                     if not isinstance(payload["is_error"], bool):
                         raise _error(line_number, "is_error must be a boolean")
                     message["is_error"] = payload["is_error"]
-                completed_calls.add(call_id)
+                if call_id is not None:
+                    completed_calls.add(call_id)
                 yield message
                 continue
             if item not in {"reasoning", "compaction", "compaction_summary", "context_compaction"}:
