@@ -9,16 +9,16 @@ description: 从已授权的 Oh My Pi（OMP）和 Codex 本地会话生成按项
 
 ## 安装与开发
 
-从 `https://github.com/N0TPO3T/daily-work-report` 获取仓库，将整个 `daily-work-report/` 子目录放入宿主配置的 Skill 搜索目录，保留 `SKILL.md` 与 `scripts/` 的相对位置。重载宿主后确认发现 `daily-work-report`，再按下面步骤配置。安装 Skill 不等于授权读取会话，也不会启用定时任务。
+从 `https://github.com/N0TPO3T/skills` 获取集中仓库，在仓库根运行 `python install.py daily-work-report`；手动安装时复制完整的 `daily-work-report/daily-work-report/` 目录，保留 `SKILL.md` 与 `scripts/` 的相对位置。重载宿主后确认发现 `daily-work-report`，再按下面步骤配置。安装 Skill 不等于授权读取会话，也不会启用定时任务。
 
-开发验证在仓库根目录运行：
+开发验证在集中仓库的 `daily-work-report/` 组件目录运行：
 
 ```text
 python -m pip install tzdata
 python -B -m unittest discover -s daily-work-report/tests -v
 ```
 
-GitHub Actions 在 Windows/Linux、Python 3.11/3.13 上运行相同回归测试。项目使用仓库根目录的 MIT 许可证。请勿将真实会话、证据包、日报草稿或个人配置提交到仓库。
+GitHub Actions 在 Windows/Linux、Python 3.11/3.13 上运行相同回归测试。日报组件使用其目录下的 MIT 许可证。请勿将真实会话、证据包、日报草稿或个人配置提交到仓库。
 
 ## 前提与授权
 

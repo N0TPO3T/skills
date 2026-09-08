@@ -6,14 +6,22 @@
 
 ## 运行要求
 
-- 宿主必须提供独立任务创建、读取、消息发送及定时心跳能力。当前工具路由面向 Codex 桌面环境，安装 skill 不会自动为 CLI 或其他环境补上这些工具。
+- 宿主必须提供真实的独立线程/任务创建、读取、消息发送及定时心跳（heartbeat）能力。当前工具路由面向 Codex 桌面环境，安装 skill 不会自动为 CLI 或其他环境补上这些工具；不能仅凭安装成功就认为通用 OMP 环境可执行此工作流。
 - 本地任务需要主机、应用和项目目录保持可用；长时间训练等作业需要环境已有的可靠后台运行方式。
 - 中台和全部执行、复核任务必须绑定同一个已登记的 Codex 项目。Git worktree 可以不同，但 `projectId` 必须一致；从项目外发起时先建立项目内中台。
 - 启动时明确目标、完成标准、项目位置、资源范围及可自主执行的操作。已有授权会沿用。
 
 ## 安装与使用
 
-可以让 Codex 使用 `$skill-installer` 安装本仓库根目录的 skill，或者将 `SKILL.md`、`agents/` 和 `references/` 一起放入宿主识别的 `multi-session-workflow` 技能目录。
+本技能集中维护于 [skills/multi-session-workflow](https://github.com/N0TPO3T/skills/tree/main/multi-session-workflow)。推荐从集中仓库根目录安装：
+
+```sh
+git clone https://github.com/N0TPO3T/skills.git
+cd skills
+python install.py multi-session-workflow
+```
+
+默认目标为 `~/.agents/skills`，可加 `--dest <skills-root>` 指定宿主识别的技能根目录，不覆盖已有目录；详情见[根 README 安装说明](../README.md)。也可以让 Codex 使用 `$skill-installer` 安装集中仓库的 `multi-session-workflow` 子目录，或者将该组件内的 `SKILL.md`、`agents/` 和 `references/` 一起放入宿主识别的 `multi-session-workflow` 技能目录。安装只复制技能文件，运行仍须满足上述宿主能力要求。
 
 在项目任务中调用：
 
@@ -55,7 +63,7 @@ $multi-session-workflow
 4. 由真正的定时唤醒派发 B；B 生成 `summary.json`，包含 `schema_version: 1`、`normalized_sha256`、`count`、`sum` 和 `mean`。
 5. 更新同一个心跳为最终复核阶段；再次真实唤醒时先暂停心跳，再确认没有重复派发或重写已完成产物。检查工具调用顺序及保存的暂停时间，不能仅依据任务自报通过。
 
-用下面的命令独立检查产物；目录中应包含原始 `input.csv` 及两个 JSON 文件：
+从 `skills/multi-session-workflow` 组件目录运行下面的命令独立检查产物；产物目录中应包含原始 `input.csv` 及两个 JSON 文件：
 
 ```sh
 python3 tests/verify_smoke.py /path/to/test-run

@@ -1,7 +1,7 @@
 # Research Agent
 
-[![CI](https://github.com/N0TPO3T/research-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/N0TPO3T/research-agent/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/N0TPO3T/research-agent)](https://github.com/N0TPO3T/research-agent/releases)
+[![CI](https://github.com/N0TPO3T/skills/actions/workflows/research-agent.yml/badge.svg)](https://github.com/N0TPO3T/skills/actions/workflows/research-agent.yml)
+[![Release](https://img.shields.io/badge/release-v0.2.0-blue)](https://github.com/N0TPO3T/skills/releases/tag/research-agent%2Fv0.2.0)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-5b5bd6)](https://agentskills.io/specification)
@@ -126,13 +126,28 @@ See [Workflow](docs/WORKFLOW.md) for the four nested loops and decision rules.
 
 ## Install the portable Skill only
 
+### Shared skills directory
+
+From a clone of the centralized repository:
+
+```bash
+git clone https://github.com/N0TPO3T/skills.git
+cd skills
+python install.py research-agent
+```
+
+This installs only the portable Skill into `~/.agents/skills/research-agent`;
+it does not install the optional Python runtime. Use `--dest <skills-root>`
+to choose another host's skills directory. Existing directories are not
+overwritten.
+
 ### Codex with `skill-installer`
 
 Ask Codex:
 
 ```text
 Install the research-agent skill from:
-https://github.com/N0TPO3T/research-agent/tree/main/skills/research-agent
+https://github.com/N0TPO3T/skills/tree/main/research-agent/skills/research-agent
 ```
 
 Restart or refresh the Agent session after installation.
@@ -140,13 +155,12 @@ Restart or refresh the Agent session after installation.
 ### Manual Codex installation
 
 ```bash
-git clone https://github.com/N0TPO3T/research-agent.git
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-cp -R research-agent/skills/research-agent \
-  "${CODEX_HOME:-$HOME/.codex}/skills/research-agent"
+git clone https://github.com/N0TPO3T/skills.git
+cd skills
+python install.py research-agent --dest "${CODEX_HOME:-$HOME/.codex}/skills"
 ```
 
-The GitHub release also provides `research-agent-skill-0.2.0.zip`. Its archive
+The [GitHub release](https://github.com/N0TPO3T/skills/releases/tag/research-agent%2Fv0.2.0) also provides `research-agent-skill-0.2.0.zip`. Its archive
 root is the installable `research-agent/` directory, so it can be extracted
 directly into a compatible host's skills directory.
 
@@ -154,8 +168,9 @@ directly into a compatible host's skills directory.
 
 The directory follows the open
 [Agent Skills specification](https://agentskills.io/specification). Copy,
-import, or point the host's skill loader at `skills/research-agent/`, following
-that host's installation instructions. Tool availability, persistence, and
+import, or point the host's skill loader at `research-agent/skills/research-agent/`
+from the centralized repository root, following that host's installation
+instructions. Tool availability, persistence, and
 automatic discovery are host-specific; cross-host behavior is not guaranteed
 to be identical.
 
@@ -188,8 +203,8 @@ The runtime requires Python 3.11 or newer.
 ### With `uv`
 
 ```bash
-git clone https://github.com/N0TPO3T/research-agent.git
-cd research-agent
+git clone https://github.com/N0TPO3T/skills.git
+cd skills/research-agent
 uv sync --extra dev
 source .venv/bin/activate
 ```
@@ -197,14 +212,14 @@ source .venv/bin/activate
 ### With `pip`
 
 ```bash
-git clone https://github.com/N0TPO3T/research-agent.git
-cd research-agent
+git clone https://github.com/N0TPO3T/skills.git
+cd skills/research-agent
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install .
 ```
 
-You may also install the wheel attached to the GitHub release. The package is
+You may also install the wheel attached to the [GitHub release](https://github.com/N0TPO3T/skills/releases/tag/research-agent%2Fv0.2.0). The package is
 not published to PyPI.
 
 ## Runtime quick start

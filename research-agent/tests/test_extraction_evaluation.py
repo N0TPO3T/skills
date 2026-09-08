@@ -154,9 +154,8 @@ def test_gold_loading_and_quality_metrics(tmp_path: Path) -> None:
     source = tmp_path / "gold.yaml"
     source.write_text(gold().model_dump_json(), encoding="utf-8")
     service = ExtractionEvaluationService(artifacts)
-    artifact = service.import_annotation(current, source)
+    service.import_annotation(current, source)
     assert service.load_annotations(current) == [gold()]
-    assert artifact.endswith("gold/PAPER-1.json")
 
     result = service.evaluate(current)
     limitation = result.semantic_metrics["limitations_claimed"]

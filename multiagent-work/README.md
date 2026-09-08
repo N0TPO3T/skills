@@ -21,18 +21,21 @@
 
 ## 安装
 
-在 Codex 中直接要求安装：
+本技能集中维护于 [skills/multiagent-work](https://github.com/N0TPO3T/skills/tree/main/multiagent-work)。在 Codex 中可直接要求安装：
 
 ```text
-请从 https://github.com/N0TPO3T/multiagent-work 安装这个 skill。
+请从 https://github.com/N0TPO3T/skills 的 multiagent-work 子目录安装这个 skill，遵循仓库根 README 的安装说明。
 ```
 
-也可以手动安装：
+推荐从集中仓库根目录使用安装器：
 
 ```bash
-git clone https://github.com/N0TPO3T/multiagent-work.git \
-  ~/.codex/skills/multiagent-work
+git clone https://github.com/N0TPO3T/skills.git
+cd skills
+python install.py multiagent-work
 ```
+
+默认目标为 `~/.agents/skills`；若宿主使用其他目录，可加 `--dest <skills-root>`（例如 `--dest ~/.codex/skills`）。安装器不覆盖已有目录，详情见[根 README 安装说明](../README.md)。
 
 安装后新建一个 Codex 任务；如果 skill 列表没有刷新，重启 Codex。
 

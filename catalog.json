@@ -1,0 +1,37 @@
+{
+  "daily-work-report": {
+    "path": "daily-work-report/daily-work-report",
+    "source_repository": "https://github.com/N0TPO3T/daily-work-report",
+    "source_commit": "da66fef1ca432d7a817a1f553fee8068cf752520",
+    "license": "MIT",
+    "license_file": "daily-work-report/LICENSE"
+  },
+  "insight-poster": {
+    "path": "insight-poster",
+    "source_repository": "https://github.com/N0TPO3T/insight-poster",
+    "source_commit": "143c3a48810c4cf675ff0b825676dd1fd0f89269",
+    "license": "MIT",
+    "license_file": "insight-poster/LICENSE"
+  },
+  "multiagent-work": {
+    "path": "multiagent-work",
+    "source_repository": "https://github.com/N0TPO3T/multiagent-work",
+    "source_commit": "cef9438cde0b418026d3054e9a97c7664e3ab6d9",
+    "license": "Apache-2.0",
+    "license_file": "multiagent-work/LICENSE"
+  },
+  "multi-session-workflow": {
+    "path": "multi-session-workflow",
+    "source_repository": "https://github.com/N0TPO3T/multi-session-workflow",
+    "source_commit": "93f537b9d22c473c0cf7db655c7f66a58dbc0645",
+    "license": null,
+    "license_file": null
+  },
+  "research-agent": {
+    "path": "research-agent/skills/research-agent",
+    "source_repository": "https://github.com/N0TPO3T/research-agent",
+    "source_commit": "be5562dfde22e0c77de77dc2b2ba76d05e3edfb2",
+    "license": "Apache-2.0",
+    "license_file": "research-agent/LICENSE"
+  }
+}

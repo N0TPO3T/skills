@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shlex
+import subprocess
 import sys
 
 import pytest
@@ -28,7 +29,8 @@ async def test_experiment_runner_captures_and_redacts(tmp_path) -> None:
     runner = ExperimentRunner(
         ArtifactStore(project_dir), allow_shell=True, timeout_seconds=10
     )
-    command = f"{shlex.quote(sys.executable)} -c \"print('measured')\""
+    argv = [sys.executable, "-c", "print('measured')"]
+    command = subprocess.list2cmdline(argv) if sys.platform == "win32" else shlex.join(argv)
     result = await runner.run_shell_experiment(
         command, project_dir, {"RESEARCH_SECRET_TOKEN": "do-not-store"}
     )

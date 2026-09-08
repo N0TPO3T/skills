@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shlex
+import subprocess
 import sys
 from pathlib import Path
 
@@ -339,7 +340,8 @@ async def test_runner_artifact_flows_back_to_host_analysis(
         )
     )
     metrics_code = "import json;open('metrics.json','w').write(json.dumps({'metric':1}))"
-    command = f"{shlex.quote(sys.executable)} -c {shlex.quote(metrics_code)}"
+    argv = [sys.executable, "-c", metrics_code]
+    command = subprocess.list2cmdline(argv) if sys.platform == "win32" else shlex.join(argv)
     execute = HostAgentResult(
         status="completed",
         summary="Execute the approved toy experiment",

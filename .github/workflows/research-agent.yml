@@ -1,4 +1,4 @@
-name: CI
+name: Research agent
 
 on:
   push:
@@ -10,6 +10,9 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: research-agent
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

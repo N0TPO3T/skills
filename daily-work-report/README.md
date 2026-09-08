@@ -31,13 +31,13 @@ python -m pip install tzdata
 在终端执行以下命令，适用于 PowerShell 及常见 Unix shell：
 
 ```sh
-git clone https://github.com/N0TPO3T/daily-work-report.git
-cd daily-work-report
+git clone https://github.com/N0TPO3T/skills.git
+cd skills
 python -m pip install tzdata
-python -c "from pathlib import Path; import shutil; shutil.copytree('daily-work-report', Path.home() / '.agents' / 'skills' / 'daily-work-report')"
+python install.py daily-work-report
 ```
 
-这会复制仓库中的 **`daily-work-report/` 子目录**，不是把整个仓库当成 Skill。最终结构应为：
+这会复制集中仓库中的 **`daily-work-report/daily-work-report/` 目录**，不是把整个仓库当成 Skill。已有同名安装时拒绝覆盖；详见[集中安装说明](../README.md)。最终结构应为：
 
 ```text
 ~/.agents/skills/daily-work-report/
@@ -221,7 +221,7 @@ python "$HOME/.agents/skills/daily-work-report/scripts/daily_report.py" save --p
 
 ## 开发验证与许可证
 
-在仓库根目录运行：
+在集中仓库的 `daily-work-report/` 组件目录运行：
 
 ```sh
 python -m pip install tzdata

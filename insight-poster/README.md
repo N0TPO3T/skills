@@ -42,20 +42,24 @@
 
 ### 1. 获取 skill
 
-从 [GitHub 仓库](https://github.com/N0TPO3T/insight-poster) 下载 ZIP 并解压，或克隆：
+从集中维护的 [skills 仓库](https://github.com/N0TPO3T/skills) 下载 ZIP 并解压，或克隆；本组件位于 [insight-poster/](https://github.com/N0TPO3T/skills/tree/main/insight-poster)。推荐从仓库根目录安装：
 
 ```sh
-git clone https://github.com/N0TPO3T/insight-poster.git
+git clone https://github.com/N0TPO3T/skills.git
+cd skills
+python install.py insight-poster
 cd insight-poster
 ```
 
-在这个目录中启动你的 coding agent，或让已有会话读取这个目录中的文件。
+安装器默认复制到 `~/.agents/skills`，可用 `--dest <skills-root>` 指定宿主的技能根目录，不覆盖已有目录。宿主的识别与启用方式见其官方文档及[根 README 安装说明](../README.md)；复制文件不代表自动注册，也不会增加宿主工具能力。
 
-如果只想使用核心规则，也可以只下载 [SKILL.md](https://raw.githubusercontent.com/N0TPO3T/insight-poster/main/SKILL.md)，无需复制示例。支持本地 skill 的 agent 可按其官方文档安装；不同工具的目录和启用方式不同，本项目不提供安装器，也不承诺自动注册。
+上述最后一步进入的是 `skills/insight-poster` 组件目录。在这个目录中启动你的 coding agent，或让已有会话读取这个目录中的文件。
+
+如果只想使用核心规则，也可以只下载 [SKILL.md](https://raw.githubusercontent.com/N0TPO3T/skills/main/insight-poster/SKILL.md)，无需复制示例。
 
 ### 2. 先用仓库示例跑一遍
 
-克隆或下载完整仓库后，将下面这段提示词发给 agent：
+克隆或下载完整仓库后，从 `skills/insight-poster` 组件目录（ZIP 解压后为 `<解压目录>/insight-poster`）操作，将下面这段提示词发给 agent：
 
 ```text
 请先阅读并遵循 SKILL.md，再读取 examples/meeting-notes.txt。
@@ -67,7 +71,7 @@ cd insight-poster
 没有实际检查的部分，请明确说明。
 ```
 
-若只下载了 `SKILL.md`，请跳过仓库示例，直接提供自己的材料。agent 不在仓库目录中时，提示词里的相对路径需要换成它实际能访问的路径。
+若只下载了 `SKILL.md`，请跳过仓库示例，直接提供自己的材料。以下所有示例的相对路径均以 `insight-poster` 组件目录为基准；agent 不在该目录中时，提示词里的相对路径需要换成它实际能访问的路径。
 
 ### 3. 打开和调整成品
 

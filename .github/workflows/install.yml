@@ -1,0 +1,21 @@
+name: Install skills
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  install:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install every portable bundle
+        run: python install.py daily-work-report insight-poster multiagent-work multi-session-workflow research-agent --dest "${{ runner.temp }}/skills-smoke"
+      - name: Run installed daily report entrypoint
+        run: python "${{ runner.temp }}/skills-smoke/daily-work-report/scripts/daily_report.py" --help

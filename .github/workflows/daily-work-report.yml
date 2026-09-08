@@ -1,4 +1,4 @@
-name: Tests
+name: Daily work report
 on:
   push:
   pull_request:
@@ -17,4 +17,4 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install tzdata
-      - run: python -B -m unittest discover -s daily-work-report/tests -v
+      - run: python -B -m unittest discover -s daily-work-report/daily-work-report/tests -v
