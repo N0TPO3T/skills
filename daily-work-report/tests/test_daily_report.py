@@ -54,7 +54,7 @@ class ReportTests(unittest.TestCase):
 
     def draft(self, packet, text="梳理检索方案，尚未实现。"):
         ref = packet["sessions"][0]["messages"][0]["id"]
-        return {"items": [{"text": text, "state": "discussion", "evidence": [ref]}],
+        return {"items": [{"project": "检索项目", "text": text, "state": "discussion", "evidence": [ref]}],
                 "reflection": {"text": "当前仅完成方案讨论，仍待验证。", "evidence": [ref]}}
 
     def test_old_session_today_window_and_historical_evidence(self):
@@ -130,7 +130,7 @@ class ReportTests(unittest.TestCase):
         self.assertIn("比较检索方案", original.decode())
         self.assertEqual(list(target.parent.glob("*.md")), [target])
         with self.assertRaises(ValueError):
-            report.publish(self.cfg, packet, self.draft(packet, "字"*301))
+            report.publish(self.cfg, packet, self.draft(packet, "字"*801))
         self.assertEqual(target.read_bytes(), original)
         with patch.object(report.os, "replace", side_effect=PermissionError("locked")):
             with self.assertRaises(PermissionError):
@@ -177,6 +177,43 @@ class ReportTests(unittest.TestCase):
         self.assertIn("继续比较检索方案", text)
         with self.assertRaises(ValueError):
             report.publish(self.cfg, packet, self.draft(packet, '配置 password="prefix,private-suffix"'))
+
+    def test_interleaved_projects_are_grouped_with_their_problem_and_resolution(self):
+        self.log("work.jsonl", [omp_header(), omp("2026-09-08T01:00:00Z",
+            "讨论检索超时与参数；运维重启后仍待验证")])
+        packet = self.packet()
+        draft = self.draft(packet)
+        template = draft["items"][0]
+        draft["items"] = [
+            {**template, "text": "排查检索超时。", "problem": "批量请求超时。",
+             "resolution": "尝试缩小批次，仍待复测。"},
+            {**template, "project": "本机运维", "text": "重启服务，待验证。"},
+            {**template, "text": "比较检索参数，尚未测试。"},
+        ]
+        target = Path(report.publish(self.cfg, packet, draft)["path"])
+        content = target.read_text(encoding="utf-8")
+        self.assertEqual(content.count("### 检索项目"), 1)
+        retrieval, operations = content.split("### 本机运维")
+        self.assertIn("比较检索参数", retrieval)
+        self.assertIn("批量请求超时", retrieval)
+        self.assertIn("仍待复测", retrieval)
+        self.assertNotIn("批量请求超时", operations)
+        self.assertIn("重启服务", operations)
+
+    def test_problem_details_count_toward_limit_and_incomplete_pairs_preserve_report(self):
+        self.log("work.jsonl", [omp_header(), omp("2026-09-08T01:00:00Z", "讨论方案")])
+        packet = self.packet()
+        draft = self.draft(packet)
+        target = Path(report.publish(self.cfg, packet, draft)["path"])
+        original = target.read_bytes()
+        draft["items"][0]["problem"] = "描述请求超时。"
+        with self.assertRaises(ValueError):
+            report.publish(self.cfg, packet, draft)
+        self.assertEqual(target.read_bytes(), original)
+        draft["items"][0]["resolution"] = "字" * 801
+        with self.assertRaises(ValueError):
+            report.publish(self.cfg, packet, draft)
+        self.assertEqual(target.read_bytes(), original)
 
     def test_unreadable_directory_entry_does_not_discard_readable_work(self):
         self.log("good.jsonl", [omp_header(), omp("2026-09-08T01:00:00Z", "讨论方案")])

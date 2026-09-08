@@ -217,8 +217,8 @@ def render(packet: dict, draft: dict) -> str | None:
     if packet.get("status") != "ready":
         raise ValueError("只有 ready 状态的证据包可以发布")
     items = draft.get("items")
-    if not isinstance(items, list) or len(items) > 5:
-        raise ValueError("今日工作必须为 0—5 条")
+    if not isinstance(items, list) or len(items) > 10:
+        raise ValueError("今日工作必须为 0—10 条")
     if not items:
         return None
     evidence = {m["id"]: m for session in packet["sessions"] for m in session["messages"]}
@@ -230,6 +230,7 @@ def render(packet: dict, draft: dict) -> str | None:
         return [evidence[r] for r in refs]
 
     texts = []
+    projects = {}
     for item in items:
         if not isinstance(item, dict) or item.get("state") not in {"discussion", "attempt", "completed", "blocked"}:
             raise ValueError("工作状态必须为 discussion/attempt/completed/blocked")
@@ -237,7 +238,16 @@ def render(packet: dict, draft: dict) -> str | None:
         if item["state"] == "completed" and not any(
                 r["role"] == "user" or (r["role"] == "tool" and not r.get("is_error", False)) for r in refs):
             raise ValueError("完成状态不能仅引用助手自述或工具调用，须引用用户确认或成功结果")
-        texts.append(prose(item.get("text"), "工作内容"))
+        project = prose(item.get("project"), "项目名称")
+        text = prose(item.get("text"), "工作内容")
+        texts.append(text)
+        lines = [f"- {text}"]
+        if "problem" in item or "resolution" in item:
+            problem = prose(item.get("problem"), "遇到的问题")
+            resolution = prose(item.get("resolution"), "处理与验证")
+            texts.extend((problem, resolution))
+            lines.extend((f"  - 问题：{problem}", f"  - 处理与验证：{resolution}"))
+        projects.setdefault(project, []).extend(lines)
     reflection = draft.get("reflection")
     if not isinstance(reflection, dict):
         raise ValueError("缺少简短复盘")
@@ -246,13 +256,16 @@ def render(packet: dict, draft: dict) -> str | None:
     sentences = [s for s in re.split(r"[。！？!?]+|(?<=[a-zA-Z])\.(?:\s|$)", review) if s.strip()]
     if not 1 <= len(sentences) <= 2:
         raise ValueError("简短复盘只能为 1—2 句话")
-    # Unicode non-whitespace characters; headings, bullets and exceptional note excluded.
-    if sum(len(re.sub(r"\s", "", t)) for t in [*texts, review]) > 300:
-        raise ValueError("正文超过 300 字，请压缩后重试")
+    # Count project names once, all work/problem/resolution text, and reflection.
+    # Fixed headings, labels, bullets, whitespace and exceptional note are excluded.
+    if sum(len(re.sub(r"\s", "", t)) for t in [*projects, *texts, review]) > 800:
+        raise ValueError("正文超过 800 字，请压缩重复内容，保留问题、处理和验证结论")
     day = date.fromisoformat(packet["report_date"])
     if day.isoformat() != packet["report_date"]:
         raise ValueError("证据包日期必须为 YYYY-MM-DD")
-    result = f"# 日报｜{day.isoformat()}\n\n## 今日工作\n" + "".join(f"- {t}\n" for t in texts)
+    result = f"# 日报｜{day.isoformat()}\n\n## 今日工作\n"
+    for project, lines in projects.items():
+        result += f"\n### {project}\n" + "\n".join(lines) + "\n"
     result += f"\n## 简短复盘\n{review}\n"
     if packet["partial"]:
         result += f"\n{NOTE}\n"
