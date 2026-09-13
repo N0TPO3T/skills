@@ -80,6 +80,16 @@ def initialize(args) -> dict:
         if archive is not None:
             sources.append({"kind": "codex", "root": str(archive.expanduser().resolve())})
     config = {"output_dir": str(args.output_dir.expanduser().resolve()), "timezone": name, "sources": sources}
+    if args.device_id is not None:
+        from shared_diary import settings
+        config.update(device_id=args.device_id)
+        if args.device_name is not None:
+            config['device_name'] = args.device_name
+        if args.legacy_device_id is not None:
+            config['legacy_device_id'] = args.legacy_device_id
+        settings(config)
+    elif args.device_name is not None or args.legacy_device_id is not None:
+        raise ValueError('设备名称和旧区块归属需要 --device-id')
     atomic_write(args.config, json.dumps(config, ensure_ascii=False, indent=2) + "\n")
     return {"status": "configured", "config": str(args.config.resolve())}
 
@@ -98,6 +108,9 @@ def configuration(path: Path) -> dict:
         if (not isinstance(source, dict) or source.get("kind") not in {"omp", "codex"}
                 or not isinstance(source.get("root"), str) or not Path(source["root"]).is_absolute()):
             raise ValueError("会话来源必须包含 kind 和绝对路径 root")
+    if 'device_id' in cfg:
+        from shared_diary import settings
+        settings(cfg)
     return cfg
 
 
@@ -177,18 +190,23 @@ def collect(cfg: dict, report_date: str | None = None, scheduled: bool = False,
                     if reporting or not text.strip():
                         continue
                     stamp = message["timestamp"].astimezone(timezone.utc)
-                    record = {**message, "timestamp": stamp.isoformat(), "text": clean(text),
+                    record = {**message, "timestamp": stamp.isoformat(), "text": text,
                               "id": f"{prefix}:{index}"}
                     if stamp < start and message["role"] in {"user", "assistant"}:
                         history.append({**record, "context_only": True})
                     elif start <= stamp < end:
                         if not messages:
-                            context = list(history)
+                            context = [{**m, "text": clean(m["text"])} for m in history]
+                        record["text"] = clean(text)
                         messages.append(record)
                 readable += 1
             except (OSError, ValueError, TypeError, KeyError) as exc:
                 # Never echo raw exception messages: malformed JSON can contain secrets.
-                errors.append({"path": resolved, "reason": f"会话读取失败（{type(exc).__name__}）"})
+                reason = f"会话读取失败（{type(exc).__name__}）"
+                # Adapter errors contain fixed reason codes and line numbers, never input.
+                if type(exc) is ValueError and re.fullmatch(r"(?:Codex JSONL|OMP) line \d+: [a-zA-Z0-9_; ,/-]+", str(exc)):
+                    reason = str(exc)
+                errors.append({"path": resolved, "reason": reason})
             if messages:
                 sessions.append({"source": source["kind"], "session": file.stem,
                                  "context": context, "messages": messages})
@@ -281,6 +299,18 @@ def publish(cfg: dict, packet: dict, draft: dict) -> dict:
         if packet["partial"]:
             reason += "；部分会话未读取，不能判断完整工作情况"
         return {"status": "skipped", "reason": reason}
+    if 'device_id' in cfg:
+        from shared_diary import save_diary, settings
+        settings(cfg)
+        with tempfile.TemporaryDirectory(prefix='daily-work-report-') as temporary:
+            standard_cfg = {k: v for k, v in cfg.items() if k != 'device_id'}
+            standard_cfg['output_dir'] = temporary
+            standard = publish(standard_cfg, packet, draft)
+            if standard['status'] != 'saved':
+                return standard
+            if Path(standard['path']).read_text(encoding='utf-8') != text:
+                raise ValueError('标准日报回读验证失败')
+            return save_diary(cfg, packet, draft)
     # Neither the draft nor session text can supply an output path.
     path = Path(cfg["output_dir"]) / f"{packet['report_date']}.md"
     atomic_write(path, text)
@@ -298,6 +328,13 @@ def main() -> int:
     init.add_argument("--omp-root", type=Path, default=Path.home()/".omp/agent/sessions")
     init.add_argument("--codex-root", type=Path, default=Path.home()/".codex/sessions")
     init.add_argument("--codex-archive-root", type=Path, help="可选授权 Codex archived_sessions 目录")
+    init.add_argument('--device-id', help='启用按设备区块保存到年/月/日.md')
+    init.add_argument('--device-name', help='设备展示名称；缺省使用 device_id')
+    init.add_argument('--legacy-device-id', help='明确指定旧无设备标记区块的所属设备')
+    sync = commands.add_parser('sync', help='生成前核对干净仓库并 fast-forward 拉取')
+    sync.add_argument('--repo', type=Path, required=True)
+    sync.add_argument('--remote-url', required=True)
+    sync.add_argument('--branch', default='main')
     get = commands.add_parser("collect", help="读取全部授权会话并按消息日期生成证据包")
     get.add_argument("--report-date")
     get.add_argument("--scheduled", action="store_true", help="未指定日期时取配置时区的前一天")
@@ -308,7 +345,10 @@ def main() -> int:
     save.add_argument("--draft", type=Path, required=True)
     args = parser.parse_args()
     try:
-        if args.command == "init":
+        if args.command == 'sync':
+            from shared_diary import sync_repository
+            result = sync_repository(args.repo, args.remote_url, args.branch)
+        elif args.command == "init":
             result = initialize(args)
         else:
             cfg = configuration(args.config)
