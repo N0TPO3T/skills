@@ -115,6 +115,10 @@ def iter_messages(path: Path) -> Iterator[dict]:
             if kind != "response_item":
                 raise _error(line_number, "unsupported record type")
             item = _required_string(payload, "type", line_number)
+            # Runtime tool declarations and reasoning configuration are metadata,
+            # not user work or tool execution evidence. Resumed logs include them.
+            if item in {"additional_tools", "configuration_update"}:
+                continue
             if item in {"web_search_call", "image_generation_call", "tool_search_call", "tool_search_output"}:
                 status = _required_string(payload, "status", line_number)
                 # Preserve native tool status, never binary images or discovered tool schemas.

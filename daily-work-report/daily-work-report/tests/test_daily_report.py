@@ -64,6 +64,22 @@ class ReportTests(unittest.TestCase):
         self.assertTrue(messages[1]['is_error'])
         self.assertNotIn('opaque-', json.dumps(packet))
 
+    def test_runtime_metadata_does_not_hide_following_work(self):
+        self.cfg['sources'][0]['kind'] = 'codex'
+        self.log('metadata.jsonl', [codex_header(),
+            {'type': 'response_item', 'payload': {
+                'type': 'additional_tools', 'id': 'tools-1', 'role': 'system',
+                'tools': [{'name': 'private-tool-schema'}]}},
+            codex('2026-09-08T01:00:00Z', 'before update'),
+            {'type': 'response_item', 'payload': {
+                'type': 'configuration_update', 'reasoning': {'effort': 'high'}}},
+            codex('2026-09-08T02:00:00Z', 'after update')])
+        packet = self.packet()
+        self.assertFalse(packet['partial'])
+        self.assertEqual([m['text'] for m in packet['sessions'][0]['messages']],
+                         ['before update', 'after update'])
+        self.assertNotIn('private-tool-schema', json.dumps(packet))
+
     def test_unknown_record_still_reports_safe_line_reason(self):
         self.cfg['sources'][0]['kind'] = 'codex'
         self.log('bad.jsonl', [codex_header(), codex('2026-09-08T01:00:00Z', 'work'),
