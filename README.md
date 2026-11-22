@@ -1,6 +1,6 @@
 # Skills
 
-集中维护的 Agent Skills：日报、信息海报、协作编排与研究工作流。各组件源码和历史从原独立仓库完整迁入，后续统一在本仓库维护。
+在本仓库集中维护日报、信息海报、协作编排、研究工作流与编码规范等 Agent Skills。
 
 ## 技能目录
 
@@ -11,6 +11,7 @@
 | [multiagent-work](multiagent-work/README.md) | 基于证据的研究与工程任务协作 | `multiagent-work/` | Apache-2.0 |
 | [multi-session-workflow](multi-session-workflow/README.md) | 使用真实独立任务及 heartbeat 进行持续协作 | `multi-session-workflow/` | 原仓库未声明 |
 | [research-agent](research-agent/README.md) | 文献、研究缺口、实验与论文的阶段化工作流 | `research-agent/skills/research-agent/` | Apache-2.0 |
+| [coding-discipline](coding-discipline/SKILL.md) | 在 Karpathy 编程原则基础上，约束重复 Markdown、临时测试产物和安全限制变更 | `coding-discipline/` | MIT |
 
 **宿主能力不随安装而获得。** OMP 和 Codex 都能发现兼容目录，但具体 Skill 仍受宿主工具能力限制。尤其 `multi-session-workflow` 依赖真实的任务/线程及定时 heartbeat，不保证所有 CLI 或 OMP 环境均可执行。`research-agent` 的便携 Skill 不依赖 Python runtime；可选运行时见下方说明。
 
@@ -29,7 +30,7 @@ python install.py daily-work-report
 也可以一次选择多个或全部 Skill：
 
 ```sh
-python install.py daily-work-report insight-poster multiagent-work multi-session-workflow research-agent
+python install.py daily-work-report insight-poster multiagent-work multi-session-workflow research-agent coding-discipline
 ```
 
 默认复制到 `~/.agents/skills/<skill-name>/`，可由当前 OMP/Codex 的 Agents Skill 来源发现。`~` 为用户主目录；Windows 对应 `%USERPROFILE%`。指定其他宿主或项目级目录：
@@ -82,13 +83,14 @@ uv run research-agent --help
 
 ## 仓库布局与维护
 
-每个顶层组件保留原仓库布局，避免相对路径、wheel 资源打包及已有测试失效：
+迁入的顶层组件保留原仓库布局，避免相对路径、wheel 资源打包及已有测试失效。
 
 ```text
 skills/
 ├── README.md
 ├── catalog.json                 # 安装目录、来源提交、许可证
 ├── install.py                   # 统一便携 Skill 安装入口
+├── coding-discipline/           # 基于 Karpathy Guidelines 的便携 Skill
 ├── daily-work-report/           # 完整日报组件，内部含可安装子目录
 ├── insight-poster/
 ├── multiagent-work/
@@ -96,7 +98,7 @@ skills/
 └── research-agent/              # 完整研究组件，含可选 Python runtime
 ```
 
-迁移采用未压缩的 Git 历史导入；`catalog.json` 的 `source_commit` 标记迁移基线，原提交在本仓库历史中仍可达。`source_repository` 是历史来源标识，不是后续安装入口。
+原独立组件采用未压缩的 Git 历史导入，迁移基线在本仓库历史中仍可达。`coding-discipline` 直接基于上游 Karpathy Guidelines 开发，`catalog.json` 记录其上游来源和基线提交。各项均通过本仓库安装。
 
 研究组件原 `v0.2.0` 发布保留为 [`research-agent/v0.2.0`](https://github.com/N0TPO3T/skills/releases/tag/research-agent%2Fv0.2.0)，包括原始附件。该历史 tag 指向原研究仓库的提交，源代码归档保持当时的独立仓库布局，不是当前集中布局。
 
@@ -120,6 +122,6 @@ uv run pytest
 uv build
 ```
 
-其他三个 Skill 主要是指令与资源，不包含通用应用测试套件。`multi-session-workflow/tests/verify_smoke.py` 需要实际宿主任务生成的产物，不能用安装成功冒充其线程/heartbeat 验收。
+其余便携 Skill 主要由指令和资源组成。`multi-session-workflow/tests/verify_smoke.py` 需要实际宿主任务生成的产物才能验证线程和 heartbeat。
 
 GitHub Actions 分别运行安装检查、日报回归和研究组件离线测试/构建。不把真实会话、私有研究数据、模型凭据或个人日报提交到本仓库。

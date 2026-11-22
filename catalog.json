@@ -33,5 +33,12 @@
     "source_commit": "be5562dfde22e0c77de77dc2b2ba76d05e3edfb2",
     "license": "Apache-2.0",
     "license_file": "research-agent/LICENSE"
+  },
+  "coding-discipline": {
+    "path": "coding-discipline",
+    "source_repository": "https://github.com/multica-ai/andrej-karpathy-skills",
+    "source_commit": "2c606141936f1eeef17fa3043a72095b4765b9c2",
+    "license": "MIT",
+    "license_file": "coding-discipline/LICENSE"
   }
 }

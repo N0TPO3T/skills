@@ -16,6 +16,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install every portable bundle
-        run: python install.py daily-work-report insight-poster multiagent-work multi-session-workflow research-agent --dest "${{ runner.temp }}/skills-smoke"
+        run: python install.py daily-work-report insight-poster multiagent-work multi-session-workflow research-agent coding-discipline --dest "${{ runner.temp }}/skills-smoke"
       - name: Run installed daily report entrypoint
         run: python "${{ runner.temp }}/skills-smoke/daily-work-report/scripts/daily_report.py" --help
