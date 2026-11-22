@@ -263,6 +263,29 @@ class ReportTests(unittest.TestCase):
         self.assertTrue(packet["partial"])
         self.assertEqual([m["text"] for m in packet["sessions"][0]["messages"]], ["开始排查"])
 
+    def test_retained_verified_answer_preserves_choice_and_following_messages(self):
+        self.cfg["sources"][0]["kind"] = "codex"
+        stamp = "2026-09-08T01:00:00Z"
+        self.log("retained.jsonl", [codex_header(), codex(stamp, "开始"),
+            {"type": "retained_context", "timestamp": stamp, "payload": {
+                "type": "verified_answer", "questions": [
+                    {"question": "训练预算？", "answer": "每组两万步"}]}},
+            codex(stamp, "后续结果")])
+        packet = self.packet()
+        self.assertFalse(packet["partial"])
+        messages = packet["sessions"][0]["messages"]
+        self.assertEqual(messages[1]["role"], "user")
+        self.assertEqual(messages[1]["text"], "Question: 训练预算？\nUser answer: 每组两万步")
+        self.assertEqual(messages[-1]["text"], "后续结果")
+
+    def test_unknown_retained_context_remains_partial(self):
+        self.cfg["sources"][0]["kind"] = "codex"
+        stamp = "2026-09-08T01:00:00Z"
+        self.log("retained.jsonl", [codex_header(), codex(stamp, "开始"),
+            {"type": "retained_context", "timestamp": stamp,
+             "payload": {"type": "unknown"}}, codex(stamp, "后续")])
+        self.assertTrue(self.packet()["partial"])
+
     def test_codex_mirrors_metadata_and_tool_failure(self):
         self.cfg["sources"][0]["kind"] = "codex"
         stamp = "2026-09-08T01:00:00Z"

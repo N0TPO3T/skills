@@ -90,6 +90,23 @@ def iter_messages(path: Path) -> Iterator[dict]:
             if kind in {"turn_context", "compacted", "world_state", "token_usage_record",
                         "inter_agent_communication_metadata"}:
                 continue
+            if kind == "retained_context":
+                if payload.get("type") != "verified_answer":
+                    raise _error(line_number, "unsupported retained context type")
+                questions = payload.get("questions")
+                if not isinstance(questions, list) or not questions:
+                    raise _error(line_number, "verified answer requires questions")
+                parts = []
+                for question in questions:
+                    if not isinstance(question, dict):
+                        raise _error(line_number, "verified answer question must be an object")
+                    prompt = _required_string(question, "question", line_number)
+                    answer = _required_string(question, "answer", line_number)
+                    parts.append(f"Question: {prompt}\nUser answer: {answer}")
+                response_message_seen = True
+                yield {"timestamp": _timestamp(record, line_number), "role": "user",
+                       "text": "\n\n".join(parts)}
+                continue
             if kind == "event_msg":
                 event = _required_string(payload, "type", line_number)
                 if event in {"user_message", "agent_message"}:
